@@ -1,0 +1,193 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+  margin-right: 20px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  line-height: 60px;
+  background-color: #f5f5f5;
+}
+
+.footer-text {
+  font-size: 80%;
+  font-style: italic;
+  line-height: 60%;
+  padding-top: 15px;
+}
+
+.nav.navbar-nav.navbar-right li a {
+  color:#0033cc;
+}
+
+.nav.navbar-nav.navbar-right {
+  padding-top: 45px;
+}
+
+.navbar-custom .navbar-menu-bottom {
+  position:relative;
+  bottom: -5;
+  margin-bottom: 0;
+}
+
+.navbar-custom .navbar-nav > li > a:hover,
+.navbar-custom .navbar-nav > li > a:focus,
+.navbar-custom .navbar-nav > .active > a:hover,
+.navbar-custom .navbar-nav > .active > a:focus,
+.navbar-custom .navbar-nav > .open >a {
+  color: #000;
+  background-color:transparent;
+}
+
+.brand-image {
+  height:80px;
+  padding-right: 10px;
+}
+
+.brand-text {
+  font-size: 220%;
+  color:#0033cc;
+  vertical-align: bottom;
+  line-height: 2.75rem;
+}
+
+ .navbar > a:hover {
+  text-decoration: none;
+  color: #000;
+ }
+
+ .navbar-custom {
+  color:#3399cc;
+  border-bottom: thin solid #0072bb;
+  border-radius: 0;
+}
+
+.sidebar-module-inset {
+  padding: 1rem;
+  background-color: #f0f8ff;
+  border-radius: 15px;
+  margin-left: 10px;
+  margin-bottom: 25px;
+}
+
+.sidebar-module-inset p:last-child,
+.sidebar-module-inset ul:last-child,
+.sidebar-module-inset ol:last-child {
+  margin-bottom: 0;
+}
+
+.content-area {
+  padding-top: 5px;
+  padding-right: 2rem;
+  padding-bottom: 20px;
+  padding-left: 40px;
+}
+
+/* Handle medium-width screens */
+
+@media (max-width: 880px) {
+
+  .brand-text {
+    font-size: 120%;
+    line-height: 1.5rem;
+  }
+
+  .nav.navbar-nav.navbar-right {
+    padding-top: 8px;
+  }
+
+  .navbar-custom .navbar-menu-bottom {
+    margin-top:0px;
+    bottom: -10;
+  }
+
+  .brand-image {
+    height:40px;
+  }
+
+}
+
+/* Handle small-width screens */
+
+@media (min-width: 769px) {
+  /* Hide the sidebar nav menu unless we're on a small width screen */
+  #sidebar-menu {
+    visibility: hidden;
+    position: absolute;
+    top:0;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    height: 80px; /* make this 2x the brand-image height */
+  }
+  .navbar-right {
+    visibility: hidden;
+  }
+  #sidebar-blogposts {
+    visibility: hidden;
+  }
+  .content-area {
+    padding-top: 5px;
+    padding-right: 2rem;
+    padding-bottom: 20px;
+    padding-left: 40px;
+  }
+  #sidebar-menu {
+    visibility: visible;
+    position: relative;
+  }
+}
+
+/* Turn off Bootstrap's native navbar collapse */
+
+.navbar-collapse.collapse {
+  display: block!important;
+}
+
+.navbar-nav>li, .navbar-nav {
+  float: left !important;
+}
+
+.navbar-nav.navbar-right:last-child {
+  margin-right: -15px !important;
+}
+
+.navbar-right {
+  float: right!important;
+}
+
+.font-110 {
+    font-size:110%;
+}
+
+.font-120 {
+    font-size:120%;
+}
+
+p.post-date {
+  font-size: 80%;
+  font-style: italic;
+}
+
+div.post-index-item {
+  margin-top:30px;
+}
+
+.post-read-more {
+  margin-left: 10px;
+  padding: 4px;
+  background-color: #f0f8ff;
+  font-size: 80%;
+}

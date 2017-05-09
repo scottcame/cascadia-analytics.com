@@ -1,0 +1,107 @@
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cascadia Analytics - {{ page.title }}</title>
+
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/custom.css" rel="stylesheet">
+    <style type="text/css">
+      @font-face {
+        font-family: 'Glyphicons Halflings';
+        src: url('/assets/fonts/glyphicons-halflings-regular.eot');
+      }
+    </style>
+
+    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/assets/js/highlight-js/styles/github.css">
+
+    <script src="/assets/js/highlight-js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-custom">
+      <div class="container-fluid">
+        <div class="navbar navbar-menu-bottom">
+        <a href="/index.html"><img src='/images/CascadiaAnalyticsLogo.png' class='brand-image'/><span class="brand-text">Cascadia Analytics</span></a>
+          <ul class="nav navbar-nav navbar-right">
+            <li {% if page.title == "About" %} class="active" {% endif %} ><a href="/About.html">About</a></li>
+            <li {% if page.title == "Philosophy" %} class="active" {% endif %} ><a href="/Philosophy.html">Philosophy</a></li>
+            <li {% if page.title == "Technologies" %} class="active" {% endif %} ><a href="/Technologies.html">Technologies</a></li>
+            <li {% if page.title == "Blog Index" %} class="active" {% endif %} ><a href="/BlogIndex.html">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav> <!-- navbar -->
+
+    <div class="container-fluid">
+      
+      <div class="row">
+
+        <div class="col-sm-3 col-xs-5 sidebar">
+          <div class="row">
+          <div id="sidebar-menu" class="sidebar-module-inset">
+            <ul class="fa-ul">
+              <li><i class="fa-li fa fa-caret-right"></i><a href="/Philosophy.html">Philosophy</a></li>
+              <li><i class="fa-li fa fa-caret-right"></i><a href="/Technologies.html">Technologies</a></li>
+              <li><i class="fa-li fa fa-caret-right"></i><a href="/BlogIndex.html">Blog</a></li>
+            </ul>
+          </div>
+          </div>
+          <div class="row">
+          <div id="sidebar-contact" class="sidebar-module-inset">
+            <h4>Contact Us</h4>
+            <ul class="fa-ul">
+              <li><i class="fa-li fa fa-envelope"></i><a href='mailto:scott@cascadia-analytics.com'>Email</a></li>
+              <li><i class="fa-li fa fa-twitter"></i><a href='https://twitter.com/cascadialtyics'>@cascadialytics</a></li>
+              <li><i class="fa-li fa fa-github"></i><a href='https://github.com/scottcame'>GitHub</a></li>
+              <li><i class="fa-li fa fa-phone"></i>360-529-2938</li>
+            </ul>
+          </div>
+          </div>
+          <div class="row">
+          <div id="sidebar-blogposts" class="sidebar-module-inset">
+            <h4>Recent Blog Posts</h4>
+            <ul class="fa-ul">
+              {% for post in site.posts limit:5 %}  
+                <li><i class="fa-li fa fa-caret-right"></i><a href="{{ post.url }}">{{ post.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </div> <!-- blog posts sidebar module -->
+          </div>
+        </div>
+
+        <div class="col-sm-9 col-xs-7 content-area">
+          <div class="row">
+          {{ content }}
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer class="footer">
+      <div class="container footer-text">
+        <p>Copyright © Cascadia Analytics LLC.  All rights reserved.</p>
+        <p>Powered by <a href="https://jekyllrb.com/">Jekyll</a> and <a href="https://pages.github.com/">GitHub Pages</a></p>
+      </div>
+    </footer>
+
+    <script src="/assets/js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/assets/js/jquery.min.js"><\/script>')</script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/jquery.matchHeight.js"></script>
+    <script src="/assets/js/custom.js"></script>
+
+  </body>
+
+</html>

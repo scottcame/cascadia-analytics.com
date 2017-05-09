@@ -1,0 +1,14 @@
+---
+  layout: base
+  title: Home
+---
+
+<h3>Cascadia Analytics Blog</h3>
+
+{% for post in site.posts %}
+	<div class="post-index-item">
+		<h5><a href="{{ post.url }}">{{ post.title }}</a></h5>
+		<p class="post-date">{{ post.date | date: '%B %d, %Y' }}</p>
+		<p>{{ post.excerpt }}<a href="{{ post.url }}"><span class="post-read-more"> Read more...</span></a></p>
+	</div>
+{% endfor %}
