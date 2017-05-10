@@ -19,7 +19,13 @@ directly from github and access the data that way:
 # install.packages("devtools")
 devtools::install_github("Data4Democracy/election-transparency/r-packages/frelections")
 
-frelections::Turnout2017
+frelections::Results2017 %>% filter(Round=='2') %>% group_by(Candidate) %>%
+	summarize(Votes=sum(Votes)) %>% mutate(Percent=Votes/sum(Votes))
+# A tibble: 2 × 3
+           Candidate    Votes  Percent
+               <chr>    <int>    <dbl>
+1 M. Emmanuel MACRON 19403484 0.649181
+2  Mme Marine LE PEN 10485690 0.350819
 </code></pre>
 
 There are two data frames included in the package, Turnout2017 with turnout counts, and Results2017 with results counts.  There are data from both rounds.</p>
