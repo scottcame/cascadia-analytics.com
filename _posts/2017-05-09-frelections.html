@@ -1,0 +1,29 @@
+---
+  layout: post
+  title: French Presidential Election Data Project
+  excerpt: Through our Data for Democracy participation, we scraped elections data from the French Interior Ministry site and made it available as an R package.
+---
+
+<p>Now that the debating, tweeting, and voting is over in France, it's time to start analyzing the data!</p>
+
+<p>The French government does a very good job of making election results available online...and of course, in France, it's all a centralized operation, rather than 50+ separate
+election authorities, each with its own set of procedures, publication formats, etc.  Thus there is <a href="http://elections.interieur.gouv.fr/presidentielle-2017/">one place</a>
+to go for the data, and its standardized across the 36,000+ communes nationwide.</p>
+
+<p>Over the past couple of evenings, I pulled together a simple R package that scrapes the results, then joins <i>Departement</i> and <i>Region</i> identifiers to enable rollups at
+higher levels of aggregation than the commune.  Check out the package details on the D4D election-transparency project
+<a href="https://github.com/Data4Democracy/election-transparency/tree/master/r-packages/frelections">github site</a> for the picky details.  Or, install the package
+directly from github and access the data that way:
+
+<pre><code class="R">
+# install.packages("devtools")
+devtools::install_github("Data4Democracy/election-transparency/r-packages/frelections")
+
+frelections::Turnout2017
+</code></pre>
+
+There are two data frames included in the package, Turnout2017 with turnout counts, and Results2017 with results counts.  There are data from both rounds.</p>
+
+<p>If R is not your thing, I have also uploaded them to <a href="https://data.world/data4democracy/election-transparency">data.world</a>, from which you can consume them as .csv files.</p>
+
+<p>Enjoy!</p>
