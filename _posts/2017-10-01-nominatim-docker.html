@@ -1,0 +1,177 @@
+---
+  layout: post
+  title: Geocoding with Nominatim and Docker
+  excerpt: Docker makes it much easier to set up a local instance of Nominatim for OpenStreetMap-based geocoding.
+---
+
+<p>It is always an exciting moment to start exploring a new dataset that contains address information, as visions of density plots and choropleths start materializing
+in the data scientist's mind. The key step on the road to making those visions a reality is <i>geocoding</i>--the process of matching addresses in a dataset against a
+spatial database to find the geographic coordinates (typically, latitude and longitude) where each address is located on the surface of the Earth.</p>
+
+<p>Several geocoding tools are available to support this process. For United States addresses, the <a href="https://geocoding.geo.census.gov/geocoder/">Census Geocoder</a> provides
+both batch and single-address interfaces using the Census Bureau's TIGER Line datasets.  Google provides a <a href="https://developers.google.com/maps/documentation/geocoding/start">
+geocoding API</a> that is free within <a href="https://developers.google.com/maps/documentation/geocoding/usage-limits">limits</a>.  And specialty services, like the
+<a href="https://geocoder.opencagedata.com/">OpenCage Geocoder</a>, that have assembled geocoding datasets from a variety of sources, also have "freemium" models that support modest amounts of
+queries per day at no cost.</p>
+
+<p><a href="http://wiki.openstreetmap.org/wiki/Nominatim">Nominatim</a> is yet another option that provides an HTTP API and companion web application for querying
+<a href="http://www.openstreetmap.org/">OpenStreetMap</a> (OSM) data by name or address. OSM is a global crowd-sourced spatial dataset with excellent tooling, open formats, and
+great community support, including sites like <a href="http://download.geofabrik.de/">GeoFabrik</a> that publish regional extracts of the (massive) OSM dataset. Nominatim is the
+standard API for accessing OSM data, and is even used on the main OSM site itself for searching the global map.
+The OSM project maintains a Nominatim <a href="https://nominatim.openstreetmap.org/">instance</a>
+that is freely available to use, under a <a href="https://operations.osmfoundation.org/policies/nominatim/">usage policy</a> that, among other things, limits access to no more than
+one query per second. Many data science applications exceed these limits, but fortunately the Nominatim software is open source, so it is possible to install the service locally with whatever
+subset of the OSM global dataset is necessary for each situation. The <a href="https://wiki.openstreetmap.org/wiki/Nominatim/Installation">instructions</a> for doing so are straightforward, but
+take a bit of effort, so having a turnkey mechainsm for setting up a local service would be helpful.</p>
+
+<p><a href="https://www.docker.com/">Docker</a> gives us just such a mechanism. A couple of existing Docker
+images on <a href="https://hub.docker.com/">DockerHub</a>
+support running Nominatim, but I decided to create new ones, for two reasons.  First, in addition to running the docker application/API service, I wanted an image to support loading
+an OSM extract into the service's database, and none of the existing images supported that directly.  And second, the "Docker way" is to have each image expose a single process as a
+micro-service, rather than serve as a virtual Linux machine...and the existing images hosted both the postgres database and Apache-based Nominatim service in the same image. To separate
+these two components into separate images, I created the following:
+
+<ul>
+	<li><a href="https://hub.docker.com/r/scottcame/nominatim-postgis/">nominatim-postgis</a>: database image (postgres + postgis + nominatim extensions)</li>
+	<li><a href="https://hub.docker.com/r/scottcame/nominatim/">nominatim</a>: Nominatim application/API service image (Apache + Nominatim + OSM extract loading script)</li>
+</ul>
+
+</p>
+
+<h4>Example Scenario: Setting up a Nominatim service for Washington State</h4>
+
+<p>As an illustration of how to use these images, let's suppose we want to set up Nominatim to geocode addresses in the state of Washington in the USA. Before we actually run any Docker containers,
+we first need a Docker network on which they can communicate.  Setting up a network requires a single command (in this example we are using
+<a href="https://www.docker.com/docker-mac">Docker for Mac</a>, but the steps are very similar on Linux or Windows):
+<pre><code>$: docker network create nominatim</code></pre>
+</p>
+
+<p>
+The next step is to run a Docker
+container with the database image, and mount a volume directory into the container so that the data persist across containers. This is important, as it ensures that the (usually substantial)
+effort involved in loading the data is not wasted if we delete the container.  Run the container with the following command, replacing the directory
+<code>~/nominatim-docker-data/washington</code> with the path on your machine where you'd like the postgis database data to be persisted:
+
+<pre><code>$: docker run -d --rm --name postgis --network nominatim -v ~/nominatim-docker-data/washington:/var/lib/pgsql scottcame/nominatim-postgis</code></pre>
+
+It is essential to name this container <code>postgis</code>, as this is the DNS name on the Docker network that the <code>nominatim</code> container will expect in connecting to the database.
+</p>
+
+<p>Next, we populate the Nominatim database with our Washington State data.  The GeoFabrik site (mentioned above) produces regular extracts of OSM data for most regions of the world,
+including US states like
+<a href="https://download.geofabrik.de/north-america/us/washington.html">Washington</a>. 
+We first visit this page and download the zipped OSM extract to <code>~/nominatim-docker-data/input-data/washington</code>.  Next, to provide address coverage for areas of the USA that do not
+have detailed house number data (which is most areas), we can leverage Nominatim's ability to import the same TIGER Line address data used by the Census Geocoder.  These data are available as
+shapefiles via <a href="ftp://ftp2.census.gov/geo/tiger/TIGER2016/EDGES/">FTP</a>; download only the files for the state (by <a href="https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code">FIPS Code</a>) that you need--in this case, we are looking for the <code>tl_2016_53*_edges.zip</code> files.  Download these files to
+<code>~/nominatim-docker-data/input-data/washington/tiger/</code>.  Finally, we can run the <code>nominatim</code> container's loading script:
+
+<pre><code>$: docker run -it --rm --network nominatim -v ~/nominatim-docker-data/input-data/washington/:/nominatim-source-data nominatim load-osm.sh washington-latest.osm</code></pre>
+
+</p>
+
+<p>On a 2016-vintage MacBook Pro with 16GB of RAM, import of the Washington State OSM extract and the TIGER Line address data takes about an hour.</p>
+
+<p>Once the data are imported into the database, one more simple command runs the Nominatim service, exposing it on the local machine on port 8089:
+
+<pre><code>$: docker run -d --rm --network nominatim --name nominatim -p 8089:80 nominatim</code></pre>
+</p>
+
+<p>Once the service is running, we are able to execute a query for an OSM database object in Washington State, like <a href="https://en.wikipedia.org/wiki/CenturyLink_Field">CenturyLink Field</a>
+(home of the <a href="http://www.seahawks.com/">Seattle Seahawks</a>):
+
+<pre><code>$: curl -s "http://localhost:8089/nominatim/search/?q=CenturyLink+Field&format=json&addressdetails=1&limit=1" | jq
+[
+  {
+    "place_id": "853866",
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright",
+    "osm_type": "relation",
+    "osm_id": "5838734",
+    "boundingbox": [
+      "47.5939768",
+      "47.5967008",
+      "-122.3331625",
+      "-122.3301161"
+    ],
+    "lat": "47.59544435",
+    "lon": "-122.331651688636",
+    "display_name": "CenturyLink Field, 800, Occidental Avenue South, West Edge, International District/Chinatown, Seattle, King County, Washington, 98134, United States of America",
+    "class": "leisure",
+    "type": "stadium",
+    "importance": 0.201,
+    "address": {
+      "stadium": "CenturyLink Field",
+      "house_number": "800",
+      "road": "Occidental Avenue South",
+      "neighbourhood": "West Edge",
+      "suburb": "International District/Chinatown",
+      "city": "Seattle",
+      "county": "King County",
+      "state": "Washington",
+      "postcode": "98134",
+      "country": "United States of America",
+      "country_code": "us"
+    }
+  }
+]</code></pre>
+</p>
+
+<p>Or, if you are meeting a friend for coffee at the original Starbucks store at Pike Place Market in Seattle, but she only knows the address, you can get the exact coordinates like so:
+
+<pre><code>$: curl -s "http://localhost:8089/nominatim/search/?q=1912%20Pike%20Place,+Seattle+WA&format=json&addressdetails=1&limit=1" | jq
+[
+  {
+    "place_id": "163682",
+    "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://www.openstreetmap.org/copyright",
+    "osm_type": "node",
+    "osm_id": "2397461017",
+    "boundingbox": [
+      "47.6099577",
+      "47.6100577",
+      "-122.3426296",
+      "-122.3425296"
+    ],
+    "lat": "47.6100077",
+    "lon": "-122.3425796",
+    "display_name": "Starbucks, 1912, Pike Place, West Edge, Belltown, Seattle, King County, Washington, 98101, United States of America",
+    "class": "amenity",
+    "type": "cafe",
+    "importance": 0.521,
+    "icon": "/nominatim/images/mapicons/food_cafe.p.20.png",
+    "address": {
+      "cafe": "Starbucks",
+      "house_number": "1912",
+      "road": "Pike Place",
+      "neighbourhood": "West Edge",
+      "suburb": "Belltown",
+      "city": "Seattle",
+      "county": "King County",
+      "state": "Washington",
+      "postcode": "98101",
+      "country": "United States of America",
+      "country_code": "us"
+    }
+  }
+]</code></pre>
+</p>
+
+<p>Happy Geocoding!</p>
+
+<p><i>For the Docker image source code, see:</i>
+
+<ul>
+	<li><code>nominatim-postgis</code>: <a href="https://hub.docker.com/r/scottcame/nominatim-postgis/">Image on DockerHub</a>,
+	<a href="https://github.com/scottcame/docker/tree/master/nominatim-postgis">GitHub Source</a></li>
+	<li><code>nominatim</code>: <a href="https://hub.docker.com/r/scottcame/nominatim/">Image on DockerHub</a>,
+	<a href="https://github.com/scottcame/docker/tree/master/nominatim">GitHub Source</a></li>
+</ul>
+
+</p>
+
+
+
+
+
+
+
+
+
