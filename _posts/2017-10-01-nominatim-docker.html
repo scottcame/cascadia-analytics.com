@@ -65,7 +65,7 @@ have detailed house number data (which is most areas), we can leverage Nominatim
 shapefiles via <a href="ftp://ftp2.census.gov/geo/tiger/TIGER2016/EDGES/">FTP</a>; download only the files for the state (by <a href="https://en.wikipedia.org/wiki/Federal_Information_Processing_Standard_state_code">FIPS Code</a>) that you need--in this case, we are looking for the <code>tl_2016_53*_edges.zip</code> files.  Download these files to
 <code>~/nominatim-docker-data/input-data/washington/tiger/</code>.  Finally, we can run the <code>nominatim</code> container's loading script:
 
-<pre><code>$: docker run -it --rm --network nominatim -v ~/nominatim-docker-data/input-data/washington/:/nominatim-source-data nominatim load-osm.sh washington-latest.osm</code></pre>
+<pre><code>$: docker run -it --rm --network nominatim -v ~/nominatim-docker-data/input-data/washington/:/nominatim-source-data scottcame/nominatim load-osm.sh washington-latest.osm</code></pre>
 
 </p>
 
@@ -73,7 +73,7 @@ shapefiles via <a href="ftp://ftp2.census.gov/geo/tiger/TIGER2016/EDGES/">FTP</a
 
 <p>Once the data are imported into the database, one more simple command runs the Nominatim service, exposing it on the local machine on port 8089:
 
-<pre><code>$: docker run -d --rm --network nominatim --name nominatim -p 8089:80 nominatim</code></pre>
+<pre><code>$: docker run -d --rm --network nominatim --name nominatim -p 8089:80 scottcame/nominatim</code></pre>
 </p>
 
 <p>Once the service is running, we are able to execute a query for an OSM database object in Washington State, like <a href="https://en.wikipedia.org/wiki/CenturyLink_Field">CenturyLink Field</a>
