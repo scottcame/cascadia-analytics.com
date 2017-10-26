@@ -1,0 +1,55 @@
+==================================================================
+https://keybase.io/scottcame
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of http://www.cascadia-analytics.com
+  * I am scottcame (https://keybase.io/scottcame) on keybase.
+  * I have a public key ASDjg_iDmw-rFZQKWjMzsGon_X35CfUpNQgYs3IWkvwnVQo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "0120e383f8839b0fab15940a5a3333b06a27fd7df909f529350818b3721692fc27550a",
+      "host": "keybase.io",
+      "kid": "0120e383f8839b0fab15940a5a3333b06a27fd7df909f529350818b3721692fc27550a",
+      "uid": "d076956f3851b39241d8f6be15b83b19",
+      "username": "scottcame"
+    },
+    "merkle_root": {
+      "ctime": 1509028032,
+      "hash": "3da906c1d7659432c2dd07fca39acd08879fcdca81733233b991f1d0a0693d0795a7fc0cc9cf0e19e586a3e0c8232c7f63b703c8337a20482bd4711d9bb7b332",
+      "hash_meta": "b86df1b07c05c9c27db3accb5549078a0155c59433641910411a643274da4e66",
+      "seqno": 1632915
+    },
+    "service": {
+      "hostname": "www.cascadia-analytics.com",
+      "protocol": "http:"
+    },
+    "type": "web_service_binding",
+    "version": 1
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "1.0.33"
+  },
+  "ctime": 1509028042,
+  "expire_in": 504576000,
+  "prev": "91d352694fbcb539305b24b56b528442a4f481e3a5613339d10c836b5b8f642e",
+  "seqno": 6,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEg44P4g5sPqxWUClozM7BqJ/19+Qn1KTUIGLNyFpL8J1UKp3BheWxvYWTFA1J7ImJvZHkiOnsia2V5Ijp7ImVsZGVzdF9raWQiOiIwMTIwZTM4M2Y4ODM5YjBmYWIxNTk0MGE1YTMzMzNiMDZhMjdmZDdkZjkwOWY1MjkzNTA4MThiMzcyMTY5MmZjMjc1NTBhIiwiaG9zdCI6ImtleWJhc2UuaW8iLCJraWQiOiIwMTIwZTM4M2Y4ODM5YjBmYWIxNTk0MGE1YTMzMzNiMDZhMjdmZDdkZjkwOWY1MjkzNTA4MThiMzcyMTY5MmZjMjc1NTBhIiwidWlkIjoiZDA3Njk1NmYzODUxYjM5MjQxZDhmNmJlMTViODNiMTkiLCJ1c2VybmFtZSI6InNjb3R0Y2FtZSJ9LCJtZXJrbGVfcm9vdCI6eyJjdGltZSI6MTUwOTAyODAzMiwiaGFzaCI6IjNkYTkwNmMxZDc2NTk0MzJjMmRkMDdmY2EzOWFjZDA4ODc5ZmNkY2E4MTczMzIzM2I5OTFmMWQwYTA2OTNkMDc5NWE3ZmMwY2M5Y2YwZTE5ZTU4NmEzZTBjODIzMmM3ZjYzYjcwM2M4MzM3YTIwNDgyYmQ0NzExZDliYjdiMzMyIiwiaGFzaF9tZXRhIjoiYjg2ZGYxYjA3YzA1YzljMjdkYjNhY2NiNTU0OTA3OGEwMTU1YzU5NDMzNjQxOTEwNDExYTY0MzI3NGRhNGU2NiIsInNlcW5vIjoxNjMyOTE1fSwic2VydmljZSI6eyJob3N0bmFtZSI6Ind3dy5jYXNjYWRpYS1hbmFseXRpY3MuY29tIiwicHJvdG9jb2wiOiJodHRwOiJ9LCJ0eXBlIjoid2ViX3NlcnZpY2VfYmluZGluZyIsInZlcnNpb24iOjF9LCJjbGllbnQiOnsibmFtZSI6ImtleWJhc2UuaW8gZ28gY2xpZW50IiwidmVyc2lvbiI6IjEuMC4zMyJ9LCJjdGltZSI6MTUwOTAyODA0MiwiZXhwaXJlX2luIjo1MDQ1NzYwMDAsInByZXYiOiI5MWQzNTI2OTRmYmNiNTM5MzA1YjI0YjU2YjUyODQ0MmE0ZjQ4MWUzYTU2MTMzMzlkMTBjODM2YjViOGY2NDJlIiwic2Vxbm8iOjYsInRhZyI6InNpZ25hdHVyZSJ9o3NpZ8RAPbldtZ66Jv+D9S0ptOG/62RGpOugfFcZcQ4C8L9C16jBivg8czB+fB6Pjk76JcVtFX+yEXALbLOHIYhEJH0UAahzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIGnhLvp2KSQ9/4nCU6kmeN6vgWPdISJlI5nItqHgq1DPo3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/scottcame
+
+==================================================================
