@@ -1,1 +1,4 @@
 exclude: [art]
+
+# Google Analytics
+google_analytics: UA-108869478-1
