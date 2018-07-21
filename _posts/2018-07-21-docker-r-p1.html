@@ -1,0 +1,144 @@
+---
+  layout: post
+  title: Running R in Docker - Part 1 - Getting Started
+  excerpt: More and more data scientists are using Docker to support reproducible research and ease deployment of applications. This series of posts helps you get started using R in Docker.
+---
+
+<p>More and more data scientists are using Docker to support reproducible research and to ease deployment of user-facing applications. This post is the first in a blog series intended to
+  provide a few helpful tips and tricks for getting started with using R in Docker. The plan for the series is:
+
+  <ul>
+    <li><a href="../../07/21/docker-r-p1.html">Part 1</a>: Running R in Docker containers interactively and as server processes</li>
+    <li>Part 2: Extending Rocker images to install packages</li>
+    <li>Part 3: Knitting RMarkdown in containers for reproducible research</li>
+    <!-- <li><a href="../../07/22/docker-r-p2.html">Part 2</a>: Extending Rocker images to install packages</li>
+    <li><a href="../../07/23/docker-r-p3.html">Part 3</a>: Knitting RMarkdown in containers for reproducible research</li> -->
+  </ul>
+
+</p>
+
+<h4>A Very Brief Introduction to Docker</h4>
+
+<p>Docker is a set of tools for running processes in Linux in a way that isolates each process in its own environment, with its own filesystem and with only explicitly
+  defined links to other processes and to the host on which it's running. Each isolated process is called a "container". A container's process and environment are defined in
+  a Docker image, and images in turn are either "pulled" pre-made from online repositories (with <a href="https://hub.docker.com/">DockerHub</a> being the most common), or created in a local Docker host by
+  building them from a sort of script called a Dockerfile.</p>
+
+<p>On non-Linux platforms (notablty, MacOS and Windows), Docker actually executes in a lightweight Linux virtual machine, but the Docker tools interface seamlessly to this VM "under
+  the hood" so it seems like containers are running natively in the MacOS or Windows environment. A tool called Docker Machine can even extend this approach to virtual
+  machines running in a wide variety of contexts, including on cloud services like Amazon Web Services. The Docker website contains excellent <a href="https://docs.docker.com/get-started/">instructions</a>
+  for installing Docker on all platforms.</p>
+
+<p>A simple example illustrates how Docker is useful for data scientists and analysts who use R.
+  A data scientist might pull a pre-configured R image from DockerHub and then run a container from that image locally to obtain an interactive R command
+  prompt. If there is no pre-configured image that provides the features needed, the data scientist can define a Dockerfile based on a pre-configured image and just add the
+  features (e.g., missing packages) needed. Alternatively, the data scientist can run a container from a pre-configured RStudio Server image (extending it with a Dockerfile
+  as needed) if RStudio is preferred over a command prompt.</p>
+
+<p>In the sections to follow, we'll explore both of these two options--interactive and server--for running R in Docker.</p>
+
+<h4>The Rocker Project</h4>
+
+<p>The <a href="https://github.com/rocker-org/rocker">Rocker project</a> maintains the de-facto standard Docker images for R.  There are four images that cover the vast majority of R users' scenarios (or at least mine, anyway):
+
+  <ul>
+    <li><code>rocker/r-ver</code>: Base R installation</li>
+    <li><code>rocker/rstudio</code>: Base R + <a href="https://www.rstudio.com/products/rstudio/">RStudio Server</a> installation</li>
+    <li><code>rocker/tidyverse</code>: Base R + RStudio Server + <a href="https://www.tidyverse.org/"><code>tidyverse</code></a> packages installation</li>
+    <li><code>rocker/shiny</code>: Base R with <a href="https://www.rstudio.com/products/shiny/shiny-server/">Shiny Server</a> (open source edition)</li>
+  </ul>
+
+</p>
+
+<p>The first three images in this list all support tags to indicate the version of R included in the image. For each version-specific image, the packages installed with R are
+  from the Microsoft MRAN snapshot as of the last day that package was the latest available. In this way, R users can always have images that correspond to an R
+  environment with a known base R version and a known version of all the included packages.</p>
+
+<h4>Interactive R</h4>
+
+<p>Sometimes, all we need is an R prompt so we can run some R code interactively from the command prompt, rather than with all the features of RStudio. Via Docker, this looks like:</p>
+
+<pre>$: docker run -ti --rm rocker/r-ver R
+
+R version 3.5.0 (2018-04-23) -- "Joy in Playing"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+>
+</pre>
+
+<p>Note that the result of this command may differ depending on when you run it, since <code>rocker/r-ver</code> will always run the latest
+  version of the Rocker project <code>r-ver</code> image. To run a specific version of R, you can always use a <i>tag</i> to specify it, like so:</p>
+
+<pre>$: docker run -ti --rm rocker/r-ver:3.4.0 R
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+...
+</pre>
+
+<p>You can see all the tags available for an image by visiting the "Tags" page of the image's area on DockerHub, like <a href="https://hub.docker.com/r/rocker/r-ver/tags/">this one</a> for <code>r-ver</code>.</p>
+
+<p>A few details about these commands:
+
+  <ul>
+    <li><code>docker run</code> is the Docker command used to run a container. The command takes a number of options, followed by the image (and, optionally, the tag) that defines the container
+      environment, and finally the executable to run as the process.</li>
+    <li>The <code>-ti</code> option tells Docker to run the container interactively, attaching the user's tty (command prompt) to the container's standard input and output.</li>
+    <li>The <code>--rm</code> option tells Docker to clean up the container when the interactive shell exits.  This prevents "ghost" stopped containers from hanging around and
+      cluttering up the Docker host.</li>
+    <li>We have explicitly asked for the container process to execute <code>R</code>. In this case, this is not strictly necessary, since it is the default command for the
+      <code>rocker/r-ver</code> image. But my personal preference is to be explicit about the command.</li>
+  </ul>
+
+</p>
+
+<p>One thing to note about interactive containers (actually, any container) is that any changes to the container's filesystem are lost when the container exits. So, if your
+  interactive R session involves creating output and saving it to a file, remember that the file will no longer be there after you exit the container. It is possible (and quite
+  easy) to write files outside the container so they stay around after the container exits.  That requires Docker volumes, which we will cover in Part 3 of the series.</p>
+
+<h4>R as Server Process</h4>
+
+<p>Running R interactively is great, but there are many use cases for running R as a server process, where users don't access R directly, but rather use a web browser
+  or other client to interact with R over a protocol like https. For example:
+
+  <ul>
+    <li>RStudio Server: Use the RStudio IDE in a web browser</li>
+    <li>Shiny Server: Host interactive web applications in R</li>
+    <li>Interact with R sessions via "headless" http APIs like <a href="https://www.opencpu.org/">OpenCPU</a> or <a href="https://www.rplumber.io/">plumber</a></li>
+  </ul>
+
+</p>
+
+<p>Running R as a server process requires a slightly different flavor of the <code>docker run</code> command. The interactive R containers we discussed above only live during
+  the interactive session, then they exit and go away. Server processes are different, in that we generally want to start them up, leave them running in the background as they
+  wait for connections, and return our local command prompt to us so we can do other things with it. With Docker we accomplish this with <i>detached</i> containers and the
+  <code>-d</code> option to <code>docker run</code>. For example, to start up an instance of RStudio Server:</p>
+
+<pre><code>$: docker run -d --name rstudio -p 80:8787 rocker/rstudio
+</code></pre>
+
+<p>After this command, RStudio Server is running on the Docker host on port 80 (the <code>-p</code> option tells Docker to expose the container port specified after the colon
+  to the host port specified before the colon). When running detached containers, I always specify a name rather than using the default name assigned by Docker; this way, I can
+  refer to the container by a name that makes sense to me (and has some relationship to what the container process is actually doing). RStudio Server will continue running, available
+  at http://localhost (from a browser running on the Docker host) or http://[hostname] from the network on which the Docker host lives. It will continue running there
+  until we stop it with either <code>docker stop rstudio</code> (to stop the container only) or <code>docker rm -f rstudio</code> (to stop it and remove it).</p>
+
+<p>Note that the base <code>rocker/rstudio</code> image only has the base R packages installed. If you'd like your RStudio Server instance to contain the <code>tidyverse</code> then
+  use the <code>rocker/tidyverse</code> image instead.</p>
+
+<h4>In the next post</h4>
+
+<p>In many cases, we want packages beyond the <code>tidyverse</code> to be available in our interactive R or RStudio Server session.  This requires that we create our own image, derived
+  from <code>rocker/tidyverse</code>, that contains what we need. We'll see how to do this in Part 2.</p>
