@@ -1,0 +1,82 @@
+---
+  layout: post
+  title: Running R in Docker - Part 2 - Creating Images
+  excerpt: In this second post in the "R in Docker" series, we see how to install packages in our own images.
+---
+
+<p>This post is the second in a series of three blog posts that cover the basics of running R in Docker. The three parts are:
+
+  <ul>
+    <li><a href="../../07/21/docker-r-p1.html">Part 1</a>: Running R in Docker containers interactively and as server processes</li>
+    <li><a href="../../07/22/docker-r-p2.html">Part 2</a>: Extending Rocker images to install packages</li>
+    <li>Part 3: Knitting RMarkdown in containers for reproducible research</li>
+    <!-- <li><a href="../../07/23/docker-r-p3.html">Part 3</a>: Knitting RMarkdown in containers for reproducible research</li> -->
+  </ul>
+
+</p>
+
+<p>In this post, we will discuss how to install packages in an image using <code>rocker/tidyverse</code> as the base image. The basic steps are the same for extending
+  <code>rocker/rstudio</code> or <code>rocker/r-ver</code>...or any Docker image, for that matter.
+
+<h4>Installing Packages in a Running Container</h4>
+
+<p>In Part 1 we saw that it was quite easy to run an instance of RStudio Server with the tidyverse installed:</p>
+
+<pre><code>$: docker run -d --name rstudio -p 80:8787 rocker/tidyverse
+</code></pre>
+
+<p>What do we do if we find we really need the <code>ggthemes</code> <a href="https://jrnold.github.io/ggthemes/">package</a> consistently in our work?
+  Since <code>ggthemes</code> is not part of the <code>tidyverse</code>,
+  it will not be available in the RStudio Server container that we just started. One option would be to simply ask users to install it if they need it, by running <code>
+    install.packages("ggthemes")</code> from the console prompt in RStudio. This would, of course, work...to a point. But remember that the package would only be available in
+    the container in which the package was installed. If you remove the container, and start up a new one, you would need to repeat the package install.</p>
+
+<p>It would be much better to create an image with the environment you want, so that the package install happens once for all the future containers that need it, without any additional effort required
+  at container runtime.</p>
+
+<h4>Creating an Image that Installs R Packages</h4>
+
+<p>Creating our own image requires writing a Dockerfile, which is a sort of script that defines the image filesystem and environment. There are many useful <a href="https://docs.docker.com/engine/reference/builder/">things</a> that you
+  can do in a Dockerfile to control the image environment. Here, we only need two know two Dockerfile instructions:  <code>FROM</code>, which identifies the image to serve as the base
+  for our new image, and <code>RUN</code>, which runs a command in the image assembly process. The following Dockerfile customizes the <code>rocker/tidyverse</code>
+  image to include <code>ggthemes</code>:</p>
+
+<pre><code>FROM rocker/tidyverse
+
+RUN R -e 'install.packages("ggthemes")'
+</code></pre>
+
+<p>To build the image (which we'll call tidyverse-ggthemes), put the Dockerfile (and be sure to name it "Dockerfile") in an empty directory (whch is usually inside a directory structure maintained in a
+  source control repository, but for now, any empty directory will do). Then, from the directory where the Dockerfile lives, run:
+
+<pre><code>$: docker build -t tidyverse-ggthemes .
+</code></pre>
+
+<p>If the image build succeeded, you should see <code>tidyverse-ggthemes</code> in the list of images produced by running <code>docker images</code>. You can also do a quick
+  test to verify that the package was installed properly:</p>
+
+<pre><code>$: docker run -ti --rm tidyverse-ggthemes R -e 'library(ggthemes)'
+</code></pre>
+
+<p>If you see:
+
+<pre>Error in library(ggthemes) : there is no package called ‘ggthemes’
+Execution halted
+</pre>
+
+then something is wrong...make sure the Dockerfile and build command are exactly as above.  If instead you see:
+
+<pre>> library(ggthemes)
+>
+</pre>
+
+Then all is well! (This command also illustrates how it's possible to pass arguments to the process executable when running a container.)</p>
+
+<p>You can now run RStudio Server from this image, and <code>ggthemes</code> will be installed and ready to use:</p>
+
+  <pre><code>$: docker run -d --name rstudio -p 80:8787 tidyverse-ggthemes
+  </code></pre>
+
+<h4>In the next post</h4>
+
+<p>In the third and final post in this series, we will see how to use Docker to reproduce research results in the form of an RMarkdown document knitted by a Docker container.</p>
