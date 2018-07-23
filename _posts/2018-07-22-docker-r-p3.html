@@ -1,0 +1,155 @@
+---
+  layout: post
+  title: Running R in Docker - Part 3 - Knitting RMarkdown
+  excerpt: In the third and final post in the series, we look at using Docker to support reproducible research--specifically, knitting an RMarkdown document representing research results.
+---
+
+<p>This post is the second in a series of three blog posts that cover the basics of running R in Docker. The three parts are:
+
+  <ul>
+    <li><a href="../../07/21/docker-r-p1.html">Part 1</a>: Running R in Docker containers interactively and as server processes</li>
+    <li><a href="../../07/22/docker-r-p2.html">Part 2</a>: Extending Rocker images to install packages</li>
+    <li><a href="../../07/23/docker-r-p3.html">Part 3</a>: Knitting RMarkdown in containers for reproducible research</li>
+  </ul>
+
+</p>
+
+<p>In this final post, we look at a common scenario: using R in Docker to encapsulate a research objective or task in an RMarkdown document and knit that document in a container with specific versions
+of R and supporting packages.
+
+<h4>Example Scenario</h4>
+
+<p>I initially developed this scenario as part of my tutorial on using R and Docker together at the <a href="https://user2018.r-project.org/">2018 useR! Conference</a>
+  (<a href="http://www.cascadia-analytics.com/docs/user2018-docker-r-tutorial-slides.pdf">slides</a>, <a href="https://www.youtube.com/watch?v=JOIKy_89c-o">video</a>). Since the conference
+  was in Australia, I chose the 2016 Australian Federal election as the illustrative "research topic". The goal here is to provide an example that shows how to use Docker to reproduce
+  research, not to perform a comprehensive analysis of the election. With that in mind, the analysis seeks to visualize the relationship between the 2016 unemployment rate in each
+  Commonwealth Electoral District in Australia and the share of the final vote won by the incumbent Liberal coalition in each district.</p>
+
+<p>To simplify the scenario further, we handle the download and preparation of the data from the Australia Election Commission in a separate step. The analysis notebook consumes the prepared data from a
+  <a href="https://data.world/scottcame/australian-federal-election-2016">dataset</a> on <a href="https://data.world">data.world</a>'s collaboration platform
+  (free signup required to see the dataset details on the platform, but you can download the files
+  as csv (<a href="https://query.data.world/s/mms2kkonnrj5am75komm7a5gff6sea">election results</a>, <a href="https://query.data.world/s/bqxkbgcmxdwagcd2bvxzz5frx2cvxt">census data</a>) without logging in.)
+  The code for the data download and preparation is available in <a href="https://github.com/scottcame/elections-analyses/blob/master/australia-federal-2016/AustraliaElection.R">GitHub</a>.</p>
+
+<p>In this example, the analysis consists of a single <a href="https://rmarkdown.rstudio.com/">RMarkdown</a> notebook and our goal is to knit it into html for publication online.</a></p>
+
+<h4>Brief Detour: Docker Volumes and Persisting Container State</h4>
+
+<p>Typically, we want to save the results of our analysis for publication or further use.  However, once a Docker container is removed (including automatically with the <code>--rm</code> option to <code>docker run</code>), any changes to the container file system are discarded. This is in keeping
+  with the Docker philosophy that containers should be <i>stateless</i>--that is, that any file whose state should live beyond the lifetime of the container should be stored outside the container. Docker
+  <i>volumes</i> provide a mechanism for managing this kind of container-independent storage.</p>
+
+<p>In this example, we will use <i>bind mount</i> volumes, as they are best suited to easy recovery of files created in a container. When setting up a bind mount, we specify a location on the host as the
+  source of the mount. Docker also provides <i>volume mount</i> volumes, whose locations are managed by Docker and are somewhat trickier to access.  You can read more about volumes on the
+  <a href="https://docs.docker.com/storage/volumes/">Docker website</a>.</p>
+
+<p>We use bind-mount volumes by passing a <code>--mount</code> command-line option to <code>docker run</code> with a type of "bind".  For instance, to mount the directory <code>/analysis-output</code> in a base R container and
+  "point" that directory to directory <code>/Users/scott/Documents/analysis-output</code> on my host (I'm on a Mac), I could do the following:</p>
+
+  <pre>$: mkdir -p /Users/scott/Documents/analysis-output
+$: docker run -it --rm --mount "type=bind,source=/Users/scott/Documents/analysis-output,target=/analysis-output" rocker/r-ver:3.5.1
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dir.exists('/analysis-output')
+[1] TRUE
+> write.csv(data.frame(a=1:5), '/analysis-output/data.csv', row.names=FALSE)
+> quit()
+$: </pre>
+
+<p>Then, back on my host, I could do the following to verify that the file remains after the container is gone:</p>
+
+<pre>$: cat /Users/scott/Documents/analysis-output/data.csv
+"a"
+1
+2
+3
+4
+5</pre>
+
+<p>Now that we know how to bind-mount a volume, we're ready to build our image and run our analysis so that the output is saved for consumption or publication.</p>
+
+<h4>Building the Image</h4>
+
+<p>In <a href="../../07/22/docker-r-p2.html">Part 2</a> we saw how to create a Dockerfile that defines an extension of a Rocker project image that tailors an
+  R environment to a specific project's needs. We will follow that same approach here, but in addition to installing packages that we need (like we did in Part 2), we will also install
+  the source code for our notebook so it's available when we run the container.</p>
+
+<p>Here is the Dockerfile:</p>
+
+<pre><code>FROM rocker/tidyverse
+
+VOLUME /analysis-output
+
+RUN R -e 'install.packages(c("ggthemes", "scales"))'
+RUN mkdir /analysis-source
+COPY Notebook.Rmd /analysis-source/
+
+CMD ["R", "-e", "rmarkdown::render('/analysis-source/Notebook.Rmd', output_file='/analysis-output/Notebook.html')"]
+</code></pre>
+
+<p>Make sure this Dockerfile lives in the same directory as <code>Notebook.Rmd</code> (and any other files referenced in a <code>COPY</code> instruction) and then build with
+  <code>docker build -t [image-name] .</code>.  As we saw in Part 2, we can install any R packages we need by running <code>R -e ...</code> during the assembly process.</p>
+
+<p>The key instruction here is <code>CMD</code>. It specifies that the default executable for containers run from this image will be run the one-line R program <code>rmarkdown::render(...)</code>. The
+  <code>render()</code> function simply knits the file found at the first argument, and as invoked here, writes output to the specified <code>output_file</code> location. Note that we point <code>output_file</code>
+  to the volume mount point, which is linked to a host directory at container runtime.</p>
+
+<p>If we wanted to take the image a step further, we could push it to an account on DockerHub, so that others who wish to reproduce our results only need to pull the image rather than build it. To push
+  this image, we first tag it to qualify the image name with an account, then use <code>docker push</code> to upload it:</p>
+
+<pre>$: docker tag australia-federal-2016 scottcame/australia-federal-2016
+$: docker push scottcame/australia-federal-2016
+The push refers to repository [docker.io/scottcame/australia-federal-2016]
+818c625b7757: Pushed
+...
+latest: digest: sha256:72bf71a3b5841dc0f06d2d28396cc6d86c09de78574ffc971d8c65b0653f5a7d size: 2417
+$: </pre>
+
+<h4>Organizing your Code</h4>
+
+<p>It is often easiest--especially for very simple notebooks--to place the Dockerfile in the same directory as the notebook and manage the entire codebase in a source control system like GitHub. Just be aware that
+  <code>docker build ...</code> copies the entire build context directory to the image context. If you have lots of other files in the directory that are irrelevant to the notebook, you can leave them
+  out of the Docker build context by listing them (specifically or by pattern) in a <code>.dockerignore</code> file.  Maintaining the Dockerfile and notebook source code together helps to keep them in
+  sync and avoids having another step to bring all the artifacts together for the build.</p>
+
+<p>You can see an example of this in the <a href="https://github.com/scottcame/elections-analyses/tree/master/australia-federal-2016">GitHub repository</a> for this example.</p>
+
+<h4>Docker and Improved Reproducibility</h4>
+
+<p>Docker allows us to encapsulate a research pipeline and context in a single artifact--the Dockerfile--that allows others to produce our results without having to follow lengthy (and error-prone)
+  installation instructions.  A fellow researcher need only have Docker installed and run a single command.  In fact, <a href="https://labs.play-with-docker.com/">Play with Docker</a> allows
+  us to reproduce these results without even having Docker installed locally:</p>
+
+<p><img src="/blog-images/docker-r-p3-pwd.png" style="width: 1200px;"></p>
+
+<p>We can even run an http server like <a href="https://httpd.apache.org/">Apache</a> on Play with Docker to see the output, again making use of bind mounts to make our <code>/analysis-output</code>
+  directory the place from which Apache serves up static web content:</p>
+
+<pre>$: docker run -d --rm --mount "type=bind,source=/analysis-output,target=/usr/local/apache2/htdocs/" -p 80:80 httpd:2.4</pre>
+
+<img src="/blog-images/docker-r-p3-notebook.png" style="width: 1000px;">
+
+<p>Or, from your local machine, you can simply curl it:</p>
+
+<pre>$: curl -s -O http://ip172-18-0-10-bdah82chlgn000eeu2jg.direct.labs.play-with-docker.com/Notebook.html</pre>
+
+<p>Note that Play with Docker makes Docker services available at an Internet address that's the same as the SSH endpoint with the "@" changed to a dot.  The SSH endpoint is shown above the shell area for
+  each PWD instance.</p>
+
+<p>I've shown Play with Docker here because it is a really useful resource for experimentation and testing things out.  Of course, in a real research scenario, we're more likely to use Docker on a private
+  cloud server or on our own desktop.</p>
