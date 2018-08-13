@@ -1,0 +1,133 @@
+---
+  layout: post
+  title: Topic Modeling and Visualization of Russian IRA Tweets
+  excerpt: In this post we take a look at the 3 million Russian Internet Research Agency (IRA) tweets released by FiveThirtyEight.
+---
+
+<p>On July 31, 2018, <a href='https://fivethirtyeight.com'>FiveThirtyEight</a> <a href='https://fivethirtyeight.com/features/why-were-sharing-3-million-russian-troll-tweets/'>released</a>
+  a <a href='https://github.com/fivethirtyeight/russian-troll-tweets/'>dataset</a> of nearly 3 million tweets from accounts associated with the Russian government's
+Internet Research Agency (IRA). The dataset resulted from a research project led by Clemson University researchers Darren Linvill and Patrick Warren, who
+wrote a <a href='http://pwarren.people.clemson.edu/Linvill_Warren_TrollFactory.pdf'>research paper</a>
+describing the project. It presents us with an opportunity to understand the objectives and methods of the people operating these accounts, starting with the basic question: what topics did they
+tweet about, and how did those topics differ across the audiences targetted by the IRA?</p>
+
+<h4>Dataset Summary</h4>
+
+<p>The dataset contains 2,973,371 tweets published between February 2012 and May 2018, with almost all tweets occurring after October 2014:
+
+<img src='/blog-images/2018-08-12-tweets-per-day.jpeg' class='post-image'></img></p>
+
+<p>Each tweet record contains the user name of the account that published the tweet, the date and time that the tweet was published,
+  the tweet's language, whether the tweet was a retweet, the number of followers of the account and the number of accounts followed by the account, and the content of the tweet.  Each record also contains a category
+  applied by Linvill and Warren:
+
+<img src='/blog-images/2018-08-12-tweets-by-category.jpeg' class='post-image'></img></p>
+
+<p>After some initial exploratory analysis to establish a foundation for analysis, I performed some typical cleanup on the text of each tweet.  Specifically, I removed punctuation, URLs, and
+  "mentions" (i.e., @[account name] strings that occur in tweets to mention another account), normalized whitespace, and removed any tweets
+  without contents.  This left a dataset with 2,215,817 tweets.</p>
+
+<h4>Topic Modeling</h4>
+
+<p>I thought it would be interesting to look at the broad themes or topics in the tweets published by the <b>LeftTroll</b> and <b>RightTroll</b> accounts as classified by the Clemson researchers.
+  To do so, I started by taking a 35% random sample of the tweets, just
+  to make the processing go more quickly on my MacBook Pro; this resulted in 143,332 <b>LeftTroll</b> tweets and 241,978 <b>RightTroll</b> tweets.  Next I removed common stop words, synthesized "co-located" words
+(e.g., the words "Donald" and "Trump" are joined to form a two-word term) if they co-occurred more than 50 times across the dataset, and removed all terms from analysis that occurred fewer than five
+times.  I then fit a <a href='https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation'>Latent Dirichlet Allocation (LDA) model</a>, using a prior of 20 topics after experimenting with topic counts of 5, 10, and 30.</p>
+
+<p>The topics learned by the model for the <b>LeftTroll</b> group, along with the 12 most relevant words in the topic and the labels I assigned based on my interpretation of them were:
+
+<div class="mt-3">
+<table class='table table-striped'>
+  <thead>
+    <tr><th scope="col">Topic #</th><th scope="col">Label</th><th scope="col">Top 12 Words in Topic</th></tr>
+  </thead>
+  <tbody>
+<tr><td>1</td><td>Music, Movies</td><td>music, watch, play, movie, book, tv, top, record, official, public, dj, artists</td></tr>
+<tr><td>2</td><td>Uninterpretable/Mix</td><td>read, win, follow, ill, daily, night, leave, heres, la, st, de, join</td></tr>
+<tr><td>3</td><td>Women, African-Americans</td><td>woman, #blackskinisnotacrime, beats, film, art, shes, photo, dope, mother, female, life, season</td></tr>
+<tr><td>4</td><td>War (?)</td><td>love, #nowplaying, world, feat, war, truth, ya, peace, james, coming, life, head</td></tr>
+<tr><td>5</td><td>Congressional votes (?)</td><td>vote, call, president, house, times, king, republicans, die, new_york, senate, voting, questions</td></tr>
+<tr><td>6</td><td>Uninterpretable/Mix</td><td>hes, hate, didnt, party, game, lol, talking, lost, won, movement, mind, strong</td></tr>
+<tr><td>7</td><td>Uninterpretable/Mix</td><td>free, feel, watch, stay, called, forget, wait, friends, power, share, sign, facebook</td></tr>
+<tr><td>8</td><td>Marches, Videos</td><td>playing, live, video, #staywoke, chicago, #news, pm, march, father, release, red, south</td></tr>
+<tr><td>9</td><td>Uninterpretable/Mix</td><td>family, home, care, child, run, breaking, americans, true, rights, country, remember, racial</td></tr>
+<tr><td>10</td><td>Protesting</td><td>american, water, justice, star, government, word, freedom, political, stand, united, #nodapl, protest</td></tr>
+<tr><td>11</td><td>Uninterpretable/Mix</td><td>life, ago, judge, found, president, dead, days, human, court, damn, worth, running</td></tr>
+<tr><td>12</td><td>2016 election, Politicians</td><td>trump, obama, gop, campaign, clinton, election, anti, business, calls, bill, trumps, republican</td></tr>
+<tr><td>13</td><td>Uninterpretable/Mix</td><td>day, time, support, listen, happy, ive, tweet, power, words, twitter, deal, proud</td></tr>
+<tr><td>14</td><td>Law Enforcement, Shootings, Black Lives Matter</td><td>police, #blacklivesmatter, cops, killed, cop, death, shot, shooting, gun, kill, arrested, officer</td></tr>
+<tr><td>15</td><td>Uninterpretable/Mix, Expletives</td><td>shit, fuck, ass, million, change, bad, #god, remember, pay, wont, life, system</td></tr>
+<tr><td>16</td><td>Law Enforcement, Black Lives Matter</td><td>#blacklivesmatter, money, #blm, #policebrutality, law, future, muslim, fire, community, post, #cops, #acab</td></tr>
+<tr><td>17</td><td>Students, School</td><td>school, kids, girls, fight, students, beat, heart, beautiful, world, college, class, student</td></tr>
+<tr><td>18</td><td>Music</td><td>real, yall, time, check, god, artist, ready, single, gotta, aint, song, hit</td></tr>
+<tr><td>19</td><td>Race</td><td>black, people, white, women, racist, racism, history, america, #blacktwitter, race, #blackhistorymonth, color</td></tr>
+<tr><td>20</td><td>Uninterpretable/Mix</td><td>youre, doesnt, news, media, wrong, stop, isnt, ppl, story, theyre, person, russia</td></tr>  </tbody>
+</table>
+</div>
+</p>
+
+<p>I thought it would be interesting to attempt to visualize the assignment of tweets to topics. The relevant output from the LDA model is a matrix θ that indicates the probability of each of the topics occurring
+  in each document. Visualizing a 143K+ x 20 matrix is challenging, but it is made much easier by using a dimensionality-reduction technique to attempt to reduce the 20 features (i.e., the topic distribution for each
+  tweet) down to 2.  I decided to see what <a href='http://jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf'>t-Distributed Stochastic Neighbor Embedding (t-SNE)</a> could do here, and it turned out to be
+  quite effective, with one caveat.  As it happens, for about half (49.3%) of the sampled LeftTroll tweets, the LDA model could not assign any topic with greater than a probability of .4.  In other words, about half of the
+  LeftTroll tweets contained terms prominent in several topics, so that no single topic stood out as predominant.  This could be due to a large number of tweets truly addressing multiple issues (or jumbling terms from
+  across topics), or it could be just a consequence of the number of topics selected or some other factor in how the model fitting occurred.  In any case, t-SNE had difficulty clustering the tweets with this "no-predominant-topic"
+  tweets included, so we can consider them part of one additional "topic" and exclude them from the visualization.  With some experimentation, I found that using a t-SNE perplexity hyperparameter of 30 resulted in the
+  cleanest clustering (I also tried 10, 20, and 50). The result, with each dot being a tweet and the color of each dot representing the likeliest topic for that tweet, is:
+
+  <img src='/blog-images/2018-08-12-LeftTroll-tsne.jpeg' class='post-image'></img></p>
+
+</p>
+
+<p>Note that there are actually 40 somewhat distinct clusters here, two for each of the 20 topics.  The smaller clusters are tweets assigned to a topic with probability=1, while the larger clusters have a lower probability
+  assignment to the likeliest topic. Overall, t-SNE with a perplexity hyperparameter of 30 seems to do a very good job at reducing the 20 columns in the θ matrix down to two for visualization.</p>
+
+<p>The topics learned by the model for the <b>RightTroll</b> group were, not surprisingly, quite different:
+
+  <div class="mt-3">
+  <table class='table table-striped'>
+    <thead>
+      <tr><th scope="col">Topic #</th><th scope="col">Label</th><th scope="col">Top 12 Words in Topic</th></tr>
+    </thead>
+    <tbody>
+<tr><td>1</td><td>Terrorism, Islam, Guns</td><td>liberals, stop, hate, violence, gun, antifa, guns, left, terrorists, people, #islamkills, remember</td></tr>
+<tr><td>2</td><td>Trump, Debates</td><td>life, god, donald_trump, #demdebate, #tcot, plan, #wakeupamerica, #pjnet, power, boy, tonight, candidate</td></tr>
+<tr><td>3</td><td>Trump, (Fake) News</td><td>trump, president, cnn, white_house, report, news, claims, poll, fake_news, voters, dem, makes</td></tr>
+<tr><td>4</td><td>Taxes, Immigration</td><td>america, money, fight, stand, enlist, jobs, pay, join, illegals, free, freedom, tax</td></tr>
+<tr><td>5</td><td>Obama, Middle East</td><td>obama, military, deal, change, speech, president, words, obamas, iran, israel, death, trumps</td></tr>
+<tr><td>6</td><td>Uninterpretable/Mix</td><td>law, racist, government, kids, public, race, takes, debate, california, person, lose, planned_parenthood</td></tr>
+<tr><td>7</td><td>Congressional votes, Obamacare</td><td>trump, gop, bill, democrats, democrat, senate, breaking, republicans, republican, judge, national, obamacare</td></tr>
+<tr><td>8</td><td>Mueller Investigation</td><td>clinton, russia, fbi, comey, hillary, mueller, russian, house, dnc, congress, investigation, breaking</td></tr>
+<tr><td>9</td><td>Uninterpretable/Mix</td><td>liberal, live, day, bad, mt, happy, school, night, city, fire, chicago, won</td></tr>
+<tr><td>10</td><td>Immigration, Elections</td><td>people, american, country, black, america, world, million, voted, donald_trump, times, refugees, immigration</td></tr>
+<tr><td>11</td><td>Uninterpretable/Mix</td><td>watch, breaking, woman, nfl, video, arrested, #news, child, hit, hollywood, sex, florida</td></tr>
+<tr><td>12</td><td>Uninterpretable/Mix</td><td>media, potus, realdonaldtrump, dems, truth, americans, #mar, job, #top, real, fake, msm</td></tr>
+<tr><td>13</td><td>Islam, Terrorism</td><td>police, isis, muslim, attack, women, white, killed, muslims, islam, shooting, islamic, terrorist</td></tr>
+<tr><td>14</td><td>Uninterpretable/Mix</td><td>lol, love, youre, read, stupid, doesnt, mccain, call, amazing, evil, press, pelosi</td></tr>
+<tr><td>15</td><td>Charlottesville</td><td>trump, breaking, video, anti, charlottesville, viral, tweet, antifa, calls, wow, exposes, mayor</td></tr>
+<tr><td>16</td><td>Uninterpretable/Mix</td><td>time, day, family, days, hope, week, home, office, remember, start, americans, leave</td></tr>
+<tr><td>17</td><td>Uninterpretable/Mix</td><td>hillary, election, hillary_clinton, campaign, didnt, party, #sports, game, voting, book, mcmaster, lying</td></tr>
+<tr><td>18</td><td>Uninterpretable/Mix</td><td>left, twitter, story, #topl, rr, post, call, rally, guy, called, trump_supporters, prison</td></tr>
+<tr><td>19</td><td>North Korea, Nuclear Weapons</td><td>north_korea, war, trump, history, lost, china, coming, #politics, breaking, st, nuclear, major</td></tr>
+<tr><td>20</td><td>Uninterpretable/Mix</td><td>#maga, vote, #trump, support, #top, follow, list, retweet, terror, #obama, flag, nation</td></tr>
+</table>
+</div>
+</p>
+
+<p>I was also not surprised to see that the t-SNE dimensionality reduction resulted in a very similar visualization of the θ matrix based on the 120,075 (49.6%) RightTroll tweets with a topic-assignment probability of at least .4:
+  <img src='/blog-images/2018-08-12-RightTroll-tsne.jpeg' class='post-image'></img></p>
+</p>
+
+<p>One somewhat surprising observation I noticed through experimentation was that applying a <a href='https://en.wikipedia.org/wiki/Tf%E2%80%93idf'>Tf-Idf</a> transformation to the document-term matrix resulted in similar
+clustering via t-SNE, but the interpretability of the topics (in terms of the words in each) was far worse.  In fact, after the Tf-Idf transformation, I was unable to discern a clear interpretation for any of them. I
+have not yet explored the underlying reason for this observation, but I may do so in a subsequent blog post.</p>
+
+<h4>R Packages Used...and Code</h4>
+
+<p>I used the excellent <code>text2vec</code> R package (<a href='http://text2vec.org/'>webpage</a>, <a href='https://github.com/dselivanov/text2vec'>GitHub</a>) for
+  all of the natural language processing (vocabulary construction, determination of co-located terms, building the
+  document-term matrix for each sample of tweets) and fitting of the LDA model underlying the analysis presented above.  I used the <code>Rtsne</code> package (<a href='https://github.com/jkrijthe/Rtsne'>GitHub</a>)
+  for applying t-SNE dimensionality reduction to the θ matrix.</p>
+
+<p>The code to create the graphics for the post is available in my <a href='https://github.com/scottcame/social-media-analyses/tree/master/ira-tweets-2018'>GitHub repository</a>.</p>
